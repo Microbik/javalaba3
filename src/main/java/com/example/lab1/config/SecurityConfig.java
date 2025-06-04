@@ -8,8 +8,6 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
@@ -17,24 +15,24 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.authorizeHttpRequests(expressionInterceptUrlRegistry ->
-                        expressionInterceptUrlRegistry
-                                .requestMatchers("/api/users/register", "/login").permitAll()
-                                .requestMatchers(HttpMethod.GET, "/api/jokes/**").hasAuthority(UserAuthority.VIEW_JOKES.name())
-                                .requestMatchers(HttpMethod.POST, "/api/jokes/**").hasAuthority(UserAuthority.ADD_JOKES.name())
-                                .requestMatchers(HttpMethod.PUT, "/api/jokes/**").hasAuthority(UserAuthority.EDIT_JOKES.name())
-                                .requestMatchers(HttpMethod.DELETE, "/api/jokes/**").hasAuthority(UserAuthority.DELETE_JOKES.name())
-                                .requestMatchers("/api/users/**").hasAuthority(UserAuthority.MANAGE_USERS.name())
-                                .anyRequest().authenticated()
+        http
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(HttpMethod.POST, "/api/users/register").permitAll() // Явно разрешаем POST
+                        .requestMatchers("/login").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/jokes/**").hasAuthority(UserAuthority.VIEW_JOKES.name())
+                        .requestMatchers(HttpMethod.POST, "/api/jokes/**").hasAuthority(UserAuthority.ADD_JOKES.name())
+                        .requestMatchers(HttpMethod.PUT, "/api/jokes/**").hasAuthority(UserAuthority.EDIT_JOKES.name())
+                        .requestMatchers(HttpMethod.DELETE, "/api/jokes/**").hasAuthority(UserAuthority.DELETE_JOKES.name())
+                        .requestMatchers("/api/users/**").hasAuthority(UserAuthority.MANAGE_USERS.name())
+                        .anyRequest().authenticated()
                 )
-                .formLogin(Customizer.withDefaults())
-                .csrf(AbstractHttpConfigurer::disable);
+                .formLogin(form -> form
+                        .loginProcessingUrl("/login")
+                        .defaultSuccessUrl("/", true)
+                        .permitAll()
+                )
+                .csrf(AbstractHttpConfigurer::disable); // CSRF отключён
 
         return http.build();
-    }
-
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
     }
 }
