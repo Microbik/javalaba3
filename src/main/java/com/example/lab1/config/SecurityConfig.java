@@ -17,7 +17,7 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.POST, "/api/users/register").permitAll() // Явно разрешаем POST
+                        .requestMatchers(HttpMethod.POST, "/api/users/register").permitAll()
                         .requestMatchers("/login").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/jokes/**").hasAuthority(UserAuthority.VIEW_JOKES.name())
                         .requestMatchers(HttpMethod.POST, "/api/jokes/**").hasAuthority(UserAuthority.ADD_JOKES.name())
@@ -31,7 +31,7 @@ public class SecurityConfig {
                         .defaultSuccessUrl("/", true)
                         .permitAll()
                 )
-                .csrf(AbstractHttpConfigurer::disable); // CSRF отключён
+                .csrf(AbstractHttpConfigurer::disable);
 
         return http.build();
     }
